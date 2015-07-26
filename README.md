@@ -56,7 +56,7 @@ could be used to set up tmpfs mount points for different services.
 $ s3secrets --region us-west-1 --bucket my-tls-keys-us-west-1 --output-dir /etc/etcd2/tls
 
 # should see this output
-Successfully decrypted my-tls-keys-us-west-1/my_tls_key.pem.encrypted to //etc/etcd2/tls/my_tls_key.pem
+Successfully decrypted my-tls-keys-us-west-1/my_tls_key.pem.encrypted to /etc/etcd2/tls/my_tls_key.pem
 ```
 
 ## Known Issues
