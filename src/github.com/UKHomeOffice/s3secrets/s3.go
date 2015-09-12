@@ -12,10 +12,11 @@ func getS3Client(cfg *aws.Config) *s3.S3 {
 	return c
 }
 
-func listObjects(c *s3.S3, b string) ([]string, error) {
+func listObjects(c *s3.S3, b, p string) ([]string, error) {
 	l := make([]string, 0)
 	resp, err := c.ListObjects(&s3.ListObjectsInput{
 		Bucket: aws.String(b),
+		Prefix: aws.String(p),
 	})
 	if err != nil {
 		return l, err

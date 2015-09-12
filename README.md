@@ -28,7 +28,7 @@ aws kms encrypt --key-id e19da26a-dde4-4575-8f94-b840794cdb62 \
   --query CiphertextBlob \
   --output text | base64 -d > my_tls_key.pem.encrypted
 
-aws s3 cp my_tls_key.pem.encrypted s3://my-tls-keys-us-west-1
+aws s3 cp my_tls_key.pem.encrypted s3://my-bucket-name/prod
 ```
 
 ## Running
@@ -38,7 +38,7 @@ Configuration is provided via command line arguments.
 $ s3secrets --help
 Usage of s3secrets:
   -bucket string
-      s3 bucket name
+      s3 bucket name with optional path
   -file-suffix string
       encrypted file suffix (default ".encrypted")
   -output-dir string
@@ -53,14 +53,11 @@ s3secrets must have access to write to the output directory. systemd.mount unit
 could be used to set up tmpfs mount points for different services.
 
 ```bash
-$ s3secrets --region us-west-1 --bucket my-tls-keys-us-west-1 --output-dir /etc/etcd2/tls
+$ s3secrets --region us-west-1 --bucket my-bucket-name/prod --output-dir /etc/etcd2/tls
 
 # should see this output
-Successfully decrypted my-tls-keys-us-west-1/my_tls_key.pem.encrypted to /etc/etcd2/tls/my_tls_key.pem
+Successfully decrypted my-bucket-name/prod/my_tls_key.pem.encrypted to /etc/etcd2/tls/my_tls_key.pem
 ```
-
-## Known Issues
-- s3secrets expects encrypted files to be stored on bucket root path.
 
 ## Contribution
 Any contribution is welcome.
