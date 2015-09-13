@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -43,6 +44,16 @@ func main() {
 	if !dirExists(outputDir) {
 		fmt.Println("Output dir does not exist. Exiting..")
 		os.Exit(1)
+	}
+	if region == "" {
+		resp, err := http.Get("http://169.254.169.254/latest/meta-data/placement/availability-zone")
+		if err == nil {
+			defer resp.Body.Close()
+			contents, err := ioutil.ReadAll(resp.Body)
+			if err == nil {
+				region = string(contents[0 : len(contents)-1])
+			}
+		}
 	}
 	var cfg *aws.Config
 	if region != "" {
