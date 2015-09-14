@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"io/ioutil"
 	"log"
 	"os"
@@ -44,9 +45,16 @@ func main() {
 		fmt.Println("Output dir does not exist. Exiting..")
 		os.Exit(1)
 	}
+	if region == "" {
+		client := ec2metadata.New(nil)
+		zone, err := client.GetMetadata("/placement/availability-zone")
+		if err == nil {
+			region = string(region[0 : len(zone)-1])
+		}
+	}
 	var cfg *aws.Config
 	if region != "" {
-		cfg = &aws.Config{Region: region}
+		cfg = &aws.Config{Region: &region}
 	}
 
 	sp := splitPath(bucket)
