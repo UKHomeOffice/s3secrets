@@ -16,6 +16,12 @@ cd s3secrets
 gb build all
 ```
 
+You can use docker to do the build:
+```
+git clone https://github.com:UKHomeOffice/s3secrets.git; 
+cd s3secrets
+docker run --rm -it -v "$PWD":/go -w /go quay.io/ukhomeofficedigital/go-gb:1.0.0 gb build all
+```
 ## Encrypting Data
 Here is an example of how to encrypt a TLS key file using aws cli. You have to
 specify which KMS master key you want to use to encrypt the data. When
