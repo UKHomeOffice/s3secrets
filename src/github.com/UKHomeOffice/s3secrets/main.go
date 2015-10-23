@@ -46,7 +46,7 @@ func main() {
 
 	var cfg *aws.Config
 	if region != "" {
-		cfg = &aws.Config{Region: &region}
+		cfg = &aws.Config{Region: region}
 	}
 
 	sp := splitPath(bucket)
