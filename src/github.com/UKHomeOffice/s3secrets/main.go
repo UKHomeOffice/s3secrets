@@ -35,7 +35,7 @@ func init() {
 func main() {
 	flag.Parse()
 	if printVersion {
-		log.Printf("s3secrets %s\n", Version)
+		fmt.Printf("s3secrets %s\n", Version)
 		os.Exit(0)
 	}
 
