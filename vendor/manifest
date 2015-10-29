@@ -79,6 +79,12 @@
 			"path": "/service/s3"
 		},
 		{
+			"importpath": "github.com/golang/glog",
+			"repository": "https://github.com/golang/glog",
+			"revision": "fca8c8854093a154ff1eb580aae10276ad6b1b5f",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/vaughan0/go-ini",
 			"repository": "https://github.com/vaughan0/go-ini",
 			"revision": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1",

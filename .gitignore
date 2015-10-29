@@ -1,3 +1,7 @@
+.idea/
+*.iml
 bin/
 pkg/
+secrets/
+release/
 src/github.com/UKHomeOffice/s3secrets/s3secrets
