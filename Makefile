@@ -5,7 +5,7 @@ PWD=$(shell pwd)
 VERSION=$(shell awk '/const Version/ { print $$4 }' src/github.com/UKHomeOffice/s3secrets/main.go | sed 's/"//g')
 VETARGS?=-asmdecl -atomic -bool -buildtags -copylocks -methods -nilfunc -printf -rangeloops -shift -structtags
 
-.PHONY: build docker-build deps vet format test clean travis release
+.PHONY: build docker-build deps lint vet format test clean travis release
 
 default: docker-build
 
