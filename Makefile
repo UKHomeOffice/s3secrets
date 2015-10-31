@@ -14,6 +14,9 @@ build:
 	gb build all
 
 docker-build:
+	@$(MAKE) lint
+	@$(MAKE) vet
+	@$(MAKE) format
 	@echo "--> Performing a docker build"
 	sudo docker run --rm -ti -v $(PWD):/go -w /go quay.io/ukhomeofficedigital/go-gb:1.0.0 gb build all
 

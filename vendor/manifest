@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/Sirupsen/logrus",
+			"repository": "https://github.com/Sirupsen/logrus",
+			"revision": "fe6f2b03125e4fcafb21406381010e363a072c80",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/aws/aws-sdk-go/aws",
 			"repository": "https://github.com/aws/aws-sdk-go",
 			"revision": "034c293ded73cf710ba12f9173d45b5d9c69ec20",
@@ -79,15 +85,51 @@
 			"path": "/service/s3"
 		},
 		{
+			"importpath": "github.com/codegangsta/cli",
+			"repository": "https://github.com/codegangsta/cli",
+			"revision": "f445c894402839580d30de47551cedc152dad814",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/fatih/color",
+			"repository": "https://github.com/fatih/color",
+			"revision": "8640971291e54b520f781270275b7ed8762ac909",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/golang/glog",
 			"repository": "https://github.com/golang/glog",
 			"revision": "fca8c8854093a154ff1eb580aae10276ad6b1b5f",
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/mattn/go-isatty",
+			"repository": "https://github.com/mattn/go-isatty",
+			"revision": "7fcbc72f853b92b5720db4a6b8482be612daef24",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/shiena/ansicolor",
+			"repository": "https://github.com/shiena/ansicolor",
+			"revision": "d445752f6f66f9cd987722f109149f6799cdf1de",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/vaughan0/go-ini",
 			"repository": "https://github.com/vaughan0/go-ini",
 			"revision": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/airbrake/gobrake.v2",
+			"repository": "https://gopkg.in/airbrake/gobrake.v2",
+			"revision": "e5efbe565a5a63d8aafee7efa2f4fdd7f42b7bd3",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"repository": "https://gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"revision": "31e6fd4bd5a98d8ee7673d24bc54ec73c31810dd",
 			"branch": "master"
 		}
 	]
