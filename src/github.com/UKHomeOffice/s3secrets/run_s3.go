@@ -23,7 +23,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"sync"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
@@ -183,7 +182,6 @@ func newSecretsCommand() cli.Command {
 
 // runPutSecretsCommand puts one of more secrets into the s3 bucket
 func runPutSecretsCommand(cx *cli.Context, factory *commandFactory) error {
-	var wg sync.WaitGroup
 	suffix := cx.GlobalString("suffix")
 	bucket := cx.String("bucket")
 	bucketPath := strings.TrimSuffix(cx.String("path"), "/")
@@ -202,47 +200,49 @@ func runPutSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 	for _, path := range files {
 		// check the file or directory exists
 		if found := fileExists(path); !found {
-			log.Warnf("the file: %s does not exists, skipping for now")
-			continue
+			return fmt.Errorf("the file: %s does not exists", path)
 		}
+
 		uploads := []string{path}
 
 		directory, err := isDirectory(path)
 		if err != nil {
-			log.Errorf("failed to stat the path: %s, error: %s", path, err)
-			continue
+			return fmt.Errorf("failed to stat the path: %s, error: %s", path, err)
 		}
 
+		// step: if a directory, lets get a list of all the files
 		if directory {
 			list, err := directoryList(path)
 			if err != nil {
-				log.Errorf("failed to get a list of files in directory: %s, error: %s", path, err)
-				continue
+				return fmt.Errorf("failed to get a list of files in directory: %s, error: %s", path, err)
 			}
 			uploads = append(uploads, list...)
 		}
 
-		// upload the file/s to s3
-		for _, ufile := range uploads {
-			fileKey := fmt.Sprintf("%s/%s%s", bucketPath, filepath.Base(ufile), suffix)
+		// step: upload the file/s to s3
+		for _, upFile := range uploads {
+			fileKey := fmt.Sprintf("%s/%s%s", bucketPath, filepath.Base(upFile), suffix)
 
 			kid := kmsID
-			if strings.HasSuffix(ufile, suffix) {
-				log.Warnf("the file: %s is already encrypted, uploading file without encryption", ufile)
+			if strings.HasSuffix(upFile, suffix) {
 				kid = ""
+				log.Warnf("the file: %s is already encrypted, uploading file without encryption", upFile)
 				fileKey = strings.TrimSuffix(fileKey, suffix)
+			} else {
+				if kmsID == "" {
+					return fmt.Errorf("you have not set the kms id in order to encrypt the file")
+				}
 			}
 
-			wg.Add(1)
-			log.Debugf("pushing the file: %s, to path: %s", ufile, fileKey)
-			go func(f *commandFactory, fp, b, p, id string, waitg *sync.WaitGroup) {
-				if err := uploadFile(f, fp, b, p, id, waitg); err != nil {
-					log.Errorf("failed to upload the file: %s, error: %s", fp, err)
-				}
-			}(factory, ufile, bucket, fileKey, kid, &wg)
+			log.Debugf("pushing the file: %s, to path: %s", upFile, fileKey)
+
+			// @TODO we could be put this back into a goroutine, but would need to wrap into multiple routines
+			// to select on the wg.Wait - which i can't be arsed to do at the moment :-)
+			if err := uploadFile(factory, upFile, bucket, fileKey, kid); err != nil {
+				return fmt.Errorf("failed to upload the file: %s, error: %s", fileKey, err)
+			}
 		}
 	}
-	wg.Wait()
 
 	return nil
 }
@@ -304,7 +304,9 @@ func runGetSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 			return fmt.Errorf("failed to retrieve a listing of the path: %s, error: %s", path, err)
 		}
 
-		log.Infof("found %d files in path: %s", len(files), path)
+		if len(files) <= 0 {
+			return fmt.Errorf("found zero files under the path: %s, were you expecting files?", path)
+		}
 
 		var filePath string
 
@@ -316,8 +318,7 @@ func runGetSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 			// retrieve the object data
 			content, err := factory.s3.getBlob(bucket, file.path)
 			if err != nil {
-				log.Errorf("failed to retrieve the object: %s, error: %s", file.path, err)
-				continue
+				return fmt.Errorf("failed to retrieve the object: %s, error: %s", file.path, err)
 			}
 			// construct the filename
 			filePath = fmt.Sprintf("%s/%s", outputDir, filepath.Base(file.path))
@@ -355,8 +356,7 @@ func runRemoveSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 
 		err := factory.s3.removeObject(bucket, path)
 		if err != nil {
-			log.Errorf("failed to remove the object: %s, error: %s", path, err)
-			continue
+			return fmt.Errorf("failed to remove the object: %s, error: %s", path, err)
 		}
 
 		log.Infof("deleted the secret: %s from the bucket", path)
@@ -387,8 +387,7 @@ func runListSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 
 		files, err := factory.s3.listObjects(bucket, path, recursive)
 		if err != nil {
-			log.Errorf("failed to retrieve a list of files from bucket: %s, path: %s, error: %s", bucket, path, err)
-			continue
+			return fmt.Errorf("failed to retrieve a list of files from bucket: %s, path: %s, error: %s", bucket, path, err)
 		}
 
 		fmt.Printf("total: %d\n", len(files))
@@ -438,16 +437,14 @@ func runCatSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 
 		data, err := factory.s3.getBlob(bucket, path)
 		if err != nil {
-			log.Warningf("failed to retrieve the object: %s, error: %s", path, err)
-			continue
+			return fmt.Errorf("failed to retrieve the object: %s, error: %s", path, err)
 		}
 
 		// step: decrypt if required
 		if !noDecrypt && strings.HasSuffix(path, suffix) {
 			data, err = factory.kms.decrypt(data)
 			if err != nil {
-				log.Errorf("failed to decrypt the object: %s, error: %s", path, err)
-				continue
+				return fmt.Errorf("failed to decrypt the object: %s, error: %s", path, err)
 			}
 		}
 
@@ -458,9 +455,7 @@ func runCatSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 }
 
 // uploadFile uploads the file to the s3 bucket, encrypting if required
-func uploadFile(factory *commandFactory, filePath, bucket, fileKey, kmsID string, wg *sync.WaitGroup) error {
-	defer wg.Done()
-
+func uploadFile(factory *commandFactory, filePath, bucket, fileKey, kmsID string) error {
 	log.Debugf("uploading the file: %s to bucket: %s, path: %s", filePath, bucket, fileKey)
 
 	// if we don't need to encrypt the file, we can only and push
