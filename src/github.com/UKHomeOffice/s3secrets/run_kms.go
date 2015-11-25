@@ -157,8 +157,7 @@ func runKMSCommand(cx *cli.Context, factory *commandFactory) (err error) {
 
 				data, err = factory.kms.encryptFile(kmsID, fileP)
 				if err != nil {
-					log.Errorf("failed to decode the file: %s, error: %s", fileP, err)
-					continue
+					return fmt.Errorf("failed to decode the file: %s, error: %s", fileP, err)
 				}
 
 				filename = fmt.Sprintf("%s%s", fileP, suffix)
@@ -173,15 +172,14 @@ func runKMSCommand(cx *cli.Context, factory *commandFactory) (err error) {
 
 				data, err = factory.kms.decryptFile(fileP)
 				if err != nil {
-					log.Errorf("failed to decode the file: %s, error: %s", fileP, err)
-					continue
+					return fmt.Errorf("failed to decode the file: %s, error: %s", fileP, err)
 				}
 
 				filename = strings.TrimSuffix(fileP, suffix)
 			}
 
 			if err = writeFile(filename, data, dryRun); err != nil {
-				log.Errorf("failed to save the file: %s, error: %s", filename, err)
+				return fmt.Errorf("failed to save the file: %s, error: %s", filename, err)
 			}
 
 			if !dryRun {
@@ -190,7 +188,7 @@ func runKMSCommand(cx *cli.Context, factory *commandFactory) (err error) {
 
 			if !noDelete && !dryRun {
 				if err = os.Remove(fileP); err != nil {
-					log.Errorf("failed to delete the original file: %s, error: %s", fileP, err)
+					return fmt.Errorf("failed to delete the original file: %s, error: %s", fileP, err)
 				}
 			}
 		}
