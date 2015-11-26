@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kms"
 )
 
@@ -31,14 +32,14 @@ type kmsClient struct {
 // newKmsClient returns KMS service client
 func newKmsClient(cfg *aws.Config) *kmsClient {
 	return &kmsClient{
-		client: kms.New(cfg),
+		client: kms.New(session.New(cfg)),
 	}
 }
 
 // encrypt encodes the plaintext block into encrypted form
 func (r *kmsClient) encrypt(kmsID string, plain []byte) ([]byte, error) {
 	resp, err := r.client.Encrypt(&kms.EncryptInput{
-		KeyID:     &kmsID,
+		KeyId:     &kmsID,
 		Plaintext: plain,
 	})
 	if err != nil {

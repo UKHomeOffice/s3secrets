@@ -28,7 +28,7 @@ import (
 )
 
 // Version is the release version
-const Version = "0.1.3"
+const Version = "v0.1.4"
 
 type commandFactory struct {
 	// the s3 client interface
@@ -100,7 +100,7 @@ func createCommandFactory(cx *cli.Context, commandFunc func(*cli.Context, *comma
 	}
 
 	// step: create a default aws configuration
-	cfg := &aws.Config{Region: awsRegion}
+	cfg := &aws.Config{Region: &awsRegion}
 
 	// step: are we specifying a aws profile, if so, we need to be using the $HOME/.aws/credentials file
 	if awsProfile != "" {

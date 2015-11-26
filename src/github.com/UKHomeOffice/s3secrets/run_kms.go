@@ -101,8 +101,8 @@ func runListKMSKeysAliases(cx *cli.Context, factory *commandFactory) error {
 	}
 
 	for _, key := range keys {
-		if key.TargetKeyID != nil {
-			fmt.Printf("%-40s%s\n", *key.AliasName, *key.TargetKeyID)
+		if key.TargetKeyId != nil {
+			fmt.Printf("%-40s%s\n", *key.AliasName, *key.TargetKeyId)
 		}
 	}
 
