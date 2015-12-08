@@ -374,7 +374,7 @@ func runListSecretsCommand(cx *cli.Context, factory *commandFactory) error {
 	paths := cx.Args()
 
 	if bucket == "" {
-		return fmt.Errorf("you have not specified a bucket to upload to")
+		return fmt.Errorf("you have not specified a bucket to list files")
 	}
 
 	if len(paths) <= 0 {

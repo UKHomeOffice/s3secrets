@@ -4,22 +4,21 @@
 		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
-			"revision": "fe6f2b03125e4fcafb21406381010e363a072c80",
+			"revision": "cdaedc68f2894175ac2b3221869685602c759e71",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/aws/aws-sdk-go",
+			"repository": "https://github.com/aws/aws-sdk-go",
+			"revision": "9d7bc2d6ca2ada0468f705f0e9725ca97f8550c8",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/aws/aws-sdk-go/aws",
 			"repository": "https://github.com/aws/aws-sdk-go",
-			"revision": "034c293ded73cf710ba12f9173d45b5d9c69ec20",
+			"revision": "9d7bc2d6ca2ada0468f705f0e9725ca97f8550c8",
 			"branch": "master",
 			"path": "/aws"
-		},
-		{
-			"importpath": "github.com/aws/aws-sdk-go/internal/endpoints",
-			"repository": "https://github.com/aws/aws-sdk-go",
-			"revision": "034c293ded73cf710ba12f9173d45b5d9c69ec20",
-			"branch": "master",
-			"path": "/internal/endpoints"
 		},
 		{
 			"importpath": "github.com/aws/aws-sdk-go/internal/protocol/json/jsonutil",
@@ -87,19 +86,44 @@
 		{
 			"importpath": "github.com/codegangsta/cli",
 			"repository": "https://github.com/codegangsta/cli",
-			"revision": "f445c894402839580d30de47551cedc152dad814",
+			"revision": "0302d3914d2a6ad61404584cdae6e6dbc9c03599",
 			"branch": "master"
+		},
+		{
+			"importpath": "github.com/davecgh/go-spew/spew",
+			"repository": "https://github.com/davecgh/go-spew",
+			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
+			"branch": "master",
+			"path": "/spew"
 		},
 		{
 			"importpath": "github.com/fatih/color",
 			"repository": "https://github.com/fatih/color",
-			"revision": "8640971291e54b520f781270275b7ed8762ac909",
+			"revision": "9aae6aaa22315390f03959adca2c4d395b02fcef",
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/golang/glog",
-			"repository": "https://github.com/golang/glog",
-			"revision": "fca8c8854093a154ff1eb580aae10276ad6b1b5f",
+			"importpath": "github.com/go-ini/ini",
+			"repository": "https://github.com/go-ini/ini",
+			"revision": "03e0e7d51a13a91c765d8d0161246bc14a38001a",
+			"branch": "v1"
+		},
+		{
+			"importpath": "github.com/jmespath/go-jmespath",
+			"repository": "https://github.com/jmespath/go-jmespath",
+			"revision": "3433f3ea46d9f8019119e7dd41274e112a2359a9",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/lsegal/gucumber",
+			"repository": "https://github.com/lsegal/gucumber",
+			"revision": "e8116c9c66e641e9f81fc0a79fac923dfc646378",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/mattn/go-colorable",
+			"repository": "https://github.com/mattn/go-colorable",
+			"revision": "51a7e7a8b1665b25ca173debdc8d52d493348f15",
 			"branch": "master"
 		},
 		{
@@ -109,16 +133,59 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/pmezard/go-difflib/difflib",
+			"repository": "https://github.com/pmezard/go-difflib",
+			"revision": "d8ed2627bdf02c080bf22230dbb337003b7aba2d",
+			"branch": "master",
+			"path": "/difflib"
+		},
+		{
 			"importpath": "github.com/shiena/ansicolor",
 			"repository": "https://github.com/shiena/ansicolor",
 			"revision": "d445752f6f66f9cd987722f109149f6799cdf1de",
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/vaughan0/go-ini",
-			"repository": "https://github.com/vaughan0/go-ini",
-			"revision": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1",
-			"branch": "master"
+			"importpath": "github.com/stretchr/testify/assert",
+			"repository": "https://github.com/stretchr/testify",
+			"revision": "d797d25e0fa6d53be3b1a216d24e868d6a1912ef",
+			"branch": "master",
+			"path": "/assert"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/ast/astutil",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "fff8fd7b194011cfedeafda246f0bfc275abb904",
+			"branch": "master",
+			"path": "/go/ast/astutil"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/buildutil",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "fff8fd7b194011cfedeafda246f0bfc275abb904",
+			"branch": "master",
+			"path": "/go/buildutil"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/exact",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "fff8fd7b194011cfedeafda246f0bfc275abb904",
+			"branch": "master",
+			"path": "/go/exact"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/loader",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "fff8fd7b194011cfedeafda246f0bfc275abb904",
+			"branch": "master",
+			"path": "/go/loader"
+		},
+		{
+			"importpath": "golang.org/x/tools/go/types",
+			"repository": "https://go.googlesource.com/tools",
+			"revision": "fff8fd7b194011cfedeafda246f0bfc275abb904",
+			"branch": "master",
+			"path": "/go/types"
 		},
 		{
 			"importpath": "gopkg.in/airbrake/gobrake.v2",

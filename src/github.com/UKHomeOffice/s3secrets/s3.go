@@ -25,6 +25,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
@@ -52,15 +53,12 @@ type objectFile struct {
 
 // newS3Client returns S3 service client
 func newS3Client(cfg *aws.Config) *s3Client {
-	client := s3.New(cfg)
-	uploadOpts := s3manager.DefaultUploadOptions
-	uploadOpts.S3 = client
-	uploader := s3manager.NewUploader(uploadOpts)
-
 	return &s3Client{
-		region:   cfg.Region,
-		client:   client,
-		uploader: uploader,
+		region: *cfg.Region,
+		client: s3.New(session.New(cfg)),
+		uploader: s3manager.NewUploader(session.New(cfg), func(u *s3manager.Uploader) {
+			u.PartSize = 64 * 1024 * 1024
+		}),
 	}
 }
 
