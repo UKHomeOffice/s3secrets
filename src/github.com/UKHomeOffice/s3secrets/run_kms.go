@@ -182,8 +182,12 @@ func runKMSCommand(cx *cli.Context, factory *commandFactory) (err error) {
 				return fmt.Errorf("failed to save the file: %s, error: %s", filename, err)
 			}
 
-			if !dryRun {
+			if !dryRun && !encrypting {
 				log.Infof("successfully decrypted and saved the file: %s", filename)
+			}
+
+			if !dryRun && encrypting {
+				log.Infof("successfully encrypted and saved the file: %s", filename)
 			}
 
 			if !noDelete && !dryRun {
