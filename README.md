@@ -58,7 +58,7 @@ COMMANDS:
 GLOBAL OPTIONS:
    --profile, -p              the profile to use from with the aws credentials file [$AWS_DEFAULT_PROFILE]
    --suffix, -S ".encrypted"  the suffix or extension of the file/s indicating they are encrypted
-   --crendentials, -c         the file containing the aws credential profiles [$AWS_SHARED_CREDENTIALS_FILE]
+   --credentials, -c         the file containing the aws credential profiles [$AWS_SHARED_CREDENTIALS_FILE]
    --region, -R               the aws region we are speak to [$AWS_DEFAULT_REGION]
    --verbose, -v              if set, the sets debug logging on
    --help, -h                 show help
