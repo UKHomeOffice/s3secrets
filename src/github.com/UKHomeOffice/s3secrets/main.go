@@ -59,7 +59,7 @@ func main() {
 			Value: ".encrypted",
 		},
 		cli.StringFlag{
-			Name:   "crendentials, c",
+			Name:   "credentials, c",
 			Usage:  "the file containing the aws credential profiles",
 			EnvVar: "AWS_SHARED_CREDENTIALS_FILE",
 		},
@@ -93,7 +93,7 @@ func main() {
 func createCommandFactory(cx *cli.Context, commandFunc func(*cli.Context, *commandFactory) error) {
 	awsRegion := cx.GlobalString("region")
 	awsProfile := cx.GlobalString("profile")
-	awsCredentials := cx.GlobalString("crendentials")
+	awsCredentials := cx.GlobalString("credentials")
 
 	if awsRegion == "" {
 		usage(cx, "you need to specify the region or export the environment variable AWS_DEFAULT_REGION")
