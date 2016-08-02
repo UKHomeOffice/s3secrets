@@ -10,6 +10,6 @@ MAINTAINER Rohith <gambol99@gmail.com>
 RUN apk update && \
     apk add ca-certificates
 
-ADD bin/kmsctl /bin/kmsctl
+ADD bin/s3secrets /bin/s3secrets
 
-ENTRYPOINT ["/bin/kmsctl"]
+ENTRYPOINT ["/bin/s3secrets"]
