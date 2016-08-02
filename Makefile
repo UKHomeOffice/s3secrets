@@ -1,5 +1,5 @@
 
-NAME=s3secret
+NAME=s3secrets
 AUTHOR=ukhomeofficedigital
 HARDWARE=$(shell uname -m)
 REGISTRY=docker.io
