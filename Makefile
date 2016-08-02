@@ -1,68 +1,106 @@
-NAME=s3secrets
-AUTHOR=UKHomeOffice
+
+NAME=s3secret
+AUTHOR=ukhomeofficedigital
 HARDWARE=$(shell uname -m)
-PWD=$(shell pwd)
-VERSION=$(shell awk '/const Version/ { print $$4 }' src/github.com/UKHomeOffice/s3secrets/main.go | sed 's/"//g')
-VETARGS?=-asmdecl -atomic -bool -buildtags -copylocks -methods -nilfunc -printf -rangeloops -shift -structtags
+REGISTRY=docker.io
+GOVERSION=1.6.3
+SUDO=
+GIT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
+ROOT_DIR=${PWD}
+VERSION=$(shell awk '/version.*=/ { print $$3 }' doc.go | sed 's/"//g')
+DEPS=$(shell go list -f '{{range .TestImports}}{{.}} {{end}}' ./...)
+PACKAGES=$(shell go list ./...)
+VETARGS?=-asmdecl -atomic -bool -buildtags -copylocks -methods -nilfunc -printf -rangeloops -shift -structtags -unsafeptr
 
-.PHONY: build docker-build deps lint vet format test clean travis release
+.PHONY: test authors changelog build docker static release lint cover vet
 
-default: docker-build
+default: build
+
+golang:
+	@echo "--> Go Version"
+	@go version
 
 build:
-	@echo "--> Performing a build"
-	gb build all
+	@echo "--> Compiling the project"
+	mkdir -p bin
+	godep go build -o bin/${NAME}
+
+static: golang deps
+	@echo "--> Compiling the static binary"
+	mkdir -p bin
+	CGO_ENABLED=0 GOOS=linux godep go build -a -tags netgo -ldflags '-w' -o bin/${NAME}
 
 docker-build:
-	@$(MAKE) lint
-	@$(MAKE) vet
-	@$(MAKE) format
-	@echo "--> Performing a docker build"
-	sudo docker run --rm -ti -v $(PWD):/go -w /go quay.io/ukhomeofficedigital/go-gb:1.0.0 gb build all
+	@echo "--> Compiling the project"
+	${SUDO} docker run --rm -v ${ROOT_DIR}:/go/src/github.com/gambol99/keycloak-proxy \
+		-w /go/src/github.com/gambol99/keycloak-proxy -e GOOS=linux golang:${GOVERSION} make static
 
-release:
-	@$(MAKE) docker-build
-	@echo "--> Performing a release"
-	mkdir -p release/
-	cp bin/${NAME} release/${NAME}_${VERSION}_linux_${HARDWARE}
+docker:
+	@echo "--> Building the docker image"
+	${SUDO} docker build -t ${REGISTRY}/${AUTHOR}/${NAME}:${VERSION} .
+
+docker-push:
+	@echo "--> Pushing the docker images to the registry"
+	${SUDO} docker push ${REGISTRY}/${AUTHOR}/${NAME}:${VERSION}
+
+release: static
+	mkdir -p release
+	gzip -c bin/${NAME} > release/${NAME}_${VERSION}_linux_${HARDWARE}.gz
+	rm -f release/${NAME}
 
 clean:
-	rm -rf ./secrets
-	rm -rf ./bin
+	rm -rf ./bin 2>/dev/null
+	rm -rf ./release 2>/dev/null
+
+authors:
+	@echo "--> Updating the AUTHORS"
+	git log --format='%aN <%aE>' | sort -u > AUTHORS
 
 deps:
-	@echo "--> Updating the dependencies"
-	@which gb 2>/dev/null ; if [ $$? -eq 1 ]; then \
-		go get github.com/constabulary/gb/...; \
+	@echo "--> Installing build dependencies"
+	@go get github.com/tools/godep
+
+vet:
+	@echo "--> Running go vet $(VETARGS) ."
+	@go tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
+		go get golang.org/x/tools/cmd/vet; \
 	fi
+	@go tool vet $(VETARGS) *.go
 
 lint:
 	@echo "--> Running golint"
 	@which golint 2>/dev/null ; if [ $$? -eq 1 ]; then \
 		go get -u github.com/golang/lint/golint; \
 	fi
-	golint src/github.com/UKHomeOffice/s3secrets
+	@golint .
 
-vet:
-	@echo "--> Running go tool vet"
-	@go tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
-		go get golang.org/x/tools/cmd/vet; \
-	fi
-	go tool vet $(VETARGS) src/github.com/UKHomeOffice/s3secrets
+gofmt:
+	@echo "--> Running gofmt check"
+	@gofmt -s -l *.go \
+	    | grep -q \.go ; if [ $$? -eq 0 ]; then \
+            echo "You need to runn the make format, we have file unformatted"; \
+            gofmt -s -l *.go; \
+            exit 1; \
+	    fi
 
 format:
 	@echo "--> Running go fmt"
-	gofmt -d src/github.com/UKHomeOffice/s3secrets
+	@gofmt -s -w *.go
 
-test:
-	@echo "--> Running go tests"
-	go test -v
-	@$(MAKE) vet
+coverage:
+	@echo "--> Running go coverage"
+	@godep go test -coverprofile cover.out
+	@godep go tool cover -html=cover.out -o cover.html
 
-travis:
-	@echo "--> Performing Unit tests"
-	@$(MAKE) deps
-	@$(MAKE) lint
-	@$(MAKE) vet
-	@$(MAKE) format
-	@$(MAKE) build
+cover:
+	@echo "--> Running go cover"
+	@godep go test --cover
+
+test: deps
+	@echo "--> Running the tests"
+	@godep go test -v
+	@$(MAKE) gofmt
+	@$(MAKE) cover
+
+changelog: release
+	git log $(shell git tag | tail -n1)..HEAD --no-merges --format=%B > changelog
