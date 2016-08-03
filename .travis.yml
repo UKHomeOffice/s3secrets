@@ -1,30 +1,29 @@
-#env:
-#  global:
-#  - secure:
+env:
+  global:
+    secure: KKK+pWS8pgsRwYr20TwTfkcdVIk3ODl1F4/iaT5bW8e4mRKDeCx8scloS37Mh7CeCCKBirAV6yh6j4HAACkUvlht8YDcH8x065XTdBZI/zs5lv5jhCwD6vHqBEqAFVGZHXGRE/5BzKrze5hs4uisKWiHXbdTKjz7bm0KCQjvzbZ2uWA1gwjBdhgVzYTDLw4QZ7g9NvjihvDfxSSJ+3PMBEFOx9HEfbi3eueiIvimqCA78hHGYpYTR4q9USu0NY5z90LFaQmh9EKuUr4M6PG6pIBWCyJsN6b5yS2VXI3cPLnPrpHFyj+7lJcTlYOaFkfUg+jSny4ookMKvBphUtqA/yiSUkFiYlaoobV8640m2q6/McG0mXaMBSbYmCBGXIOhYIccIL2M802sNEAL2kd079yYK1m1HXH5SJFRu84fjUlWiogdX2x4MhekbUqAcnbBbV6POXrxdOmSMuXXiSIP0y6AZxdJZrAvdDhOp6ZYCuY8ebeQofZ33ly+09+ndKeFrpHK8n5Wtj2A1GIRRHOk4S296wH7s0DOsLR9Pd+t5C9WXo73tn1yHEwyJxea9t/1+sFi+3bYers6dvi5n5JO60lvrsATMsoaQFV4vN/zeAgjk+wApdZcxYAruvn21f++ZUh+o2/LmK+tzqROBWCvG1fiusM0zHC7EY/GNuWDWm4=
+
 language: go
 go:
-- 1.6
+- 1.6.3
 - 1.7beta2
 install:
 - go get github.com/tools/godep
 script:
 - make test
-#before_deploy:
-#- NAME=GOOS=windows GOARCH=amd64 godep go build -o bin/s3secrets-windows-amd64.exe
-#- NAME=GOOS=windows GOARCH=386 godep go build -o bin/s3secrets-windows-i386.exe
-#- NAME=GOOS=linux GOARCH=amd64 godep go build -o bin/s3secrets-linux-amd64
-#- NAME=GOOS=linux GOARCH=386 godep go build -o bin/s3secrets-linux-i386
-#deploy:
-#  skip_cleanup: true
-#  on:
-#    go: 1.6
-#    repo: UKHomeOffice/s3secrets
-#    tags: true
-#  provider: releases
-#  api_key:
-#    secure: "${GITHUB_TOKEN}"
-#  file:
-#  - bin/s3secrets-windows-amd64.exe
-#  - bin/s3secrets-windows-i386.exe
-#  - bin/s3secrets-linux-amd64
-#  - bin/s3secrets-linux-i386
+before_deploy:
+- NAME=GOOS=windows GOARCH=amd64 godep go build -o bin/s3secrets-windows-amd64.exe
+- NAME=GOOS=linux GOARCH=amd64 godep go build -o bin/s3secrets-linux-amd64
+- NAME=GOOS=darwin GOARCH=amd64 godep go build -o bin/s3secrets-darwin-amd64
+deploy:
+  skip_cleanup: true
+  on:
+    go: 1.6.3
+    repo: UKHomeOffice/s3secrets
+    tags: true
+  provider: releases
+  api_key:
+    secure: "${GITHUB_TOKEN}"
+  file:
+  - bin/s3secrets-windows-amd64.exe
+  - bin/s3secrets-linux-amd64
+  - bin/s3secrets-darwin-amd64
