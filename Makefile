@@ -2,8 +2,8 @@
 NAME=s3secrets
 AUTHOR=ukhomeofficedigital
 HARDWARE=$(shell uname -m)
-REGISTRY=docker.io
-GOVERSION=1.6.3
+REGISTRY=quay.io
+GOVERSION=1.7
 SUDO=
 GIT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 ROOT_DIR=${PWD}
