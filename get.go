@@ -160,9 +160,9 @@ func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) error {
 						}
 
 						// step: are we flattening the files
-						filename := fmt.Sprintf("%s%s", directory, keyName)
+						filename := fmt.Sprintf("%s/%s", directory, keyName)
 						if flatten {
-							filename = fmt.Sprintf("%s%s", directory, filepath.Base(keyName))
+							filename = fmt.Sprintf("%s/%s", directory, filepath.Base(keyName))
 						}
 
 						// step: retrieve file and write the content to disk
