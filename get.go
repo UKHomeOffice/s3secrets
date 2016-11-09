@@ -85,8 +85,10 @@ func newGetCommand(cmd *cliCommand) cli.Command {
 //
 // getFiles retrieve files from bucket
 //
-func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) (err error) {
-	// step: get the inputs
+func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) error {
+	var err error
+
+	// step: get the
 	bucket := cx.String("bucket")
 	directory := cx.String("output-dir")
 	flatten := cx.Bool("flatten")
@@ -101,96 +103,103 @@ func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) (err error) {
 	}
 
 	// step: create the output directory if required
-	if err := os.MkdirAll(directory, 0755); err != nil {
+	if err = os.MkdirAll(directory, 0755); err != nil {
 		return err
 	}
 
-	// step: create a signal to handle exits
+	// step: create a signal to handle exits and a ticker for intervals
 	signalCh := make(chan os.Signal)
 	signal.Notify(signalCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	tickerCh := time.NewTicker(1)
+	exitCh := make(chan error, 1)
+	firstTime := true
 
-	// step: create an error channel for the exiting
-	errCh := make(chan error)
+	// step: create a map for etags - used to maintainer the etags of the files
+	fileTags := make(map[string]string, 0)
 
-	go func() {
-		// step: iterate the paths build a list of files were interested in
-		for {
-			for _, p := range getPaths(cx) {
-				// step: drop the slash to for empty
-				p = strings.TrimPrefix(p, "/")
+	for {
+		select {
+		case err = <-exitCh:
+			return err
+		case <-tickerCh.C:
+			if firstTime {
+				tickerCh = time.NewTicker(syncInterval)
+				firstTime = false
+			}
+			// step: iterate the paths specified on the command line
+			err := func() error {
+				for _, bucketPath := range getPaths(cx) {
+					path := strings.TrimPrefix(bucketPath, "/")
+					// step: retrieve a list of files under this path
+					list, err := cmd.listBucketKeys(bucket, path)
+					if err != nil {
+						o.fields(map[string]interface{}{
+							"bucket": bucket,
+							"path":   path,
+							"error":  err.Error(),
+						}).log("unable to retrieve a listing in bucket: %s, path: %s\n", bucket, path)
 
-				// step: list all the keys in the bucket
-				files, err := cmd.listBucketKeys(bucket, p)
-				if err != nil {
-					errCh <- err
-					return
-				}
-
-				// step: iterate the files
-				for _, k := range files {
-					keyName := *k.Key
-					path := keyName
-					filename := filepath.Base(path)
-
-					// step: apply the filter and ignore everything were not interested in
-					if !filter.MatchString(*k.Key) {
-						continue
-					}
-					// step: are we recursive? i.e. if not, check the file ends with the filename
-					if !recursive && !strings.HasSuffix(path, filename) {
-						continue
-					}
-
-					// step: are we flattening the files
-					switch flatten {
-					case true:
-						path = fmt.Sprintf("%s/%s", directory, filepath.Base(path))
-					default:
-						path = fmt.Sprintf("%s/%s", directory, path)
+						return err
 					}
 
-					// step: process the file
-					if err := processFile(path, keyName, bucket, cmd); err != nil {
+					// step: iterate the files under the path
+					for _, file := range list {
+						keyName := strings.TrimPrefix(*file.Key, "/")
+						// step: apply the filter and ignore everything were not interested in
+						if !filter.MatchString(keyName) {
+							continue
+						}
+						// step: are we recursive? i.e. if not, check the file ends with the filename
+						if !recursive && !strings.HasSuffix(path, keyName) {
+							continue
+						}
+
+						// step: if we have download this file before, check the etag has changed
+						if etag, found := fileTags[keyName]; found && etag == *file.ETag {
+							continue // we can skip the file, nothing has changed
+						}
+
+						// step: are we flattening the files
+						filename := fmt.Sprintf("%s%s", directory, keyName)
+						if flatten {
+							filename = fmt.Sprintf("%s%s", directory, filepath.Base(keyName))
+						}
+
+						// step: retrieve file and write the content to disk
+						if err := processFile(filename, keyName, bucket, cmd); err != nil {
+							o.fields(map[string]interface{}{
+								"action":      "get",
+								"bucket":      bucket,
+								"destination": path,
+								"error":       err.Error(),
+							}).log("failed to retrieve file: %s, error: %s\n", keyName, err)
+
+							return err
+						}
+						// step: update the filetags
+						fileTags[keyName] = *file.ETag
+
+						// step: add the log
 						o.fields(map[string]interface{}{
 							"action":      "get",
 							"bucket":      bucket,
-							"destination": path,
-							"error":       err.Error(),
-						}).log("failed to retrieve key: %s, error: %s\n", keyName, err)
-
-						if !syncEnabled {
-							errCh <- err
-							return
-						}
+							"destination": filename,
+							"etag":        file.ETag,
+						}).log("retrieved the file: %s and wrote to: %s\n", keyName, filename)
 					}
-					// step: add the log
-					o.fields(map[string]interface{}{
-						"action":      "get",
-						"bucket":      bucket,
-						"destination": path,
-					}).log("retrieved the file: %s and wrote to: %s\n", keyName, path)
 				}
-			}
 
-			// step: if not sync we can break
+				return nil
+			}()
+			// step: if we are not in a sync loop we can exit
 			if !syncEnabled {
-				break
+				exitCh <- err
 			}
-
-			// step: otherwise we can inject delay between loops
-			time.Sleep(syncInterval)
+		case <-signalCh:
+			o.log("exitting the synchronzition service")
+			return nil
 		}
-		errCh <- nil
-	}()
-
-	// step: wait for an exit or signal to quit
-
-	select {
-	case <-signalCh:
-	case err = <-errCh:
 	}
-
-	return err
 }
 
 //
@@ -202,14 +211,10 @@ func processFile(path, key, bucket string, cmd *cliCommand) error {
 	if err != nil {
 		return err
 	}
-
 	// step: ensure the directory structure
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
-
-	// @TODO check if the files exists and only write if required
-
 	// step: create the file for writing
 	return ioutil.WriteFile(path, content, 0644)
 }
