@@ -17,7 +17,7 @@ package main
 
 const (
 	progName = "s3secrets"
-	version  = "v1.0.1"
+	version  = "v1.0.2"
 	author   = "Rohith"
 	email    = "gambol99@gmail.com"
 )
