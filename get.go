@@ -123,6 +123,7 @@ func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) error {
 			return err
 		case <-tickerCh.C:
 			if firstTime {
+				tickerCh.Stop()
 				tickerCh = time.NewTicker(syncInterval)
 				firstTime = false
 			}
