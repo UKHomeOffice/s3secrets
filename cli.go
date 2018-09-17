@@ -75,6 +75,10 @@ func newCliApplication() *cli.App {
 			EnvVar: "AWS_SESSION_TOKEN",
 		},
 		cli.StringFlag{
+			Name:  "endpoint-url",
+			Usage: "the aws s3 endpoint to use",
+		},
+		cli.StringFlag{
 			Name:  "environment-file",
 			Usage: "a file containing a list of environment variables",
 		},
@@ -185,6 +189,10 @@ func (r *cliCommand) getCredentials() func(cx *cli.Context) error {
 		}
 		config := &aws.Config{
 			Region: aws.String(cx.GlobalString("region")),
+		}
+		if cx.GlobalString("endpoint-url") != "" {
+			endpoint := cx.GlobalString("endpoint-url")
+			config.Endpoint = &endpoint
 		}
 
 		// step: are we using static credentials
