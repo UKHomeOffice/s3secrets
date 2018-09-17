@@ -17,7 +17,11 @@ package main
 
 const (
 	progName = "s3secrets"
-	version  = "v1.0.3"
 	author   = "Rohith"
 	email    = "gambol99@gmail.com"
+)
+
+var (
+	// version is set at compile time
+	version string
 )

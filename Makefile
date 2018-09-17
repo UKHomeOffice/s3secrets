@@ -3,13 +3,15 @@ NAME=s3secrets
 AUTHOR=ukhomeofficedigital
 HARDWARE=$(shell uname -m)
 REGISTRY=quay.io
+GIT_VERSION=$(shell git describe --always --tags --dirty)
 GOVERSION=1.7
 SUDO=
 GIT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 ROOT_DIR=${PWD}
-VERSION=$(shell awk '/version.*=/ { print $$3 }' doc.go | sed 's/"//g')
 DEPS=$(shell go list -f '{{range .TestImports}}{{.}} {{end}}' ./...)
 PACKAGES=$(shell go list ./...)
+VERSION_PKG=main
+LFLAGS ?= -X ${VERSION_PKG}.version=${GIT_VERSION} -w
 VETARGS?=-asmdecl -atomic -bool -buildtags -copylocks -methods -nilfunc -printf -rangeloops -shift -structtags -unsafeptr
 
 .PHONY: test authors changelog build docker static release lint cover vet
@@ -23,12 +25,12 @@ golang:
 build:
 	@echo "--> Compiling the project"
 	mkdir -p bin
-	godep go build -o bin/${NAME}
+	godep go build -o bin/${NAME} -ldflags "${LFLAGS}"
 
 static: golang deps
 	@echo "--> Compiling the static binary"
 	mkdir -p bin
-	CGO_ENABLED=0 GOOS=linux godep go build -a -tags netgo -ldflags '-w' -o bin/${NAME}
+	CGO_ENABLED=0 GOOS=linux godep go build -a -tags netgo -ldflags "${LFLAGS}" -o bin/${NAME}
 
 docker-build:
 	@echo "--> Compiling the project"
@@ -37,15 +39,15 @@ docker-build:
 
 docker:
 	@echo "--> Building the docker image"
-	${SUDO} docker build -t ${REGISTRY}/${AUTHOR}/${NAME}:${VERSION} .
+	${SUDO} docker build -t ${REGISTRY}/${AUTHOR}/${NAME}:${GIT_VERSION} .
 
 docker-push:
 	@echo "--> Pushing the docker images to the registry"
-	${SUDO} docker push ${REGISTRY}/${AUTHOR}/${NAME}:${VERSION}
+	${SUDO} docker push ${REGISTRY}/${AUTHOR}/${NAME}:${GIT_VERSION}
 
 release: static
 	mkdir -p release
-	gzip -c bin/${NAME} > release/${NAME}_${VERSION}_linux_${HARDWARE}.gz
+	gzip -c bin/${NAME} > release/${NAME}_${GIT_VERSION}_linux_${HARDWARE}.gz
 	rm -f release/${NAME}
 
 clean:
