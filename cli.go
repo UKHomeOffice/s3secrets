@@ -78,6 +78,10 @@ func newCliApplication() *cli.App {
 			Name:  "endpoint-url",
 			Usage: "the aws s3 endpoint to use",
 		},
+		cli.BoolFlag{
+			Name:  "s3-path-style",
+			Usage: "use a path instead of DNS for bucket name",
+		},
 		cli.StringFlag{
 			Name:  "environment-file",
 			Usage: "a file containing a list of environment variables",
@@ -193,6 +197,9 @@ func (r *cliCommand) getCredentials() func(cx *cli.Context) error {
 		if cx.GlobalString("endpoint-url") != "" {
 			endpoint := cx.GlobalString("endpoint-url")
 			config.Endpoint = &endpoint
+		}
+		if cx.GlobalBool("s3-path-style") {
+			config.S3ForcePathStyle = aws.Bool(true)
 		}
 
 		// step: are we using static credentials
