@@ -22,6 +22,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -95,6 +96,7 @@ func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) error {
 	recursive := cx.Bool("recursive")
 	syncEnabled := cx.Bool("sync")
 	syncInterval := cx.Duration("sync-interval")
+	perms := cx.String("perms")
 
 	// step: validate the filter if any
 	var filter *regexp.Regexp
@@ -167,7 +169,7 @@ func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) error {
 						}
 
 						// step: retrieve file and write the content to disk
-						if err := processFile(filename, keyName, bucket, cmd); err != nil {
+						if err := processFile(filename, keyName, bucket, perms, cmd); err != nil {
 							o.fields(map[string]interface{}{
 								"action":      "get",
 								"bucket":      bucket,
@@ -206,7 +208,7 @@ func getFiles(o *formatter, cx *cli.Context, cmd *cliCommand) error {
 //
 // processFile is responsible for retrieving the files
 //
-func processFile(path, key, bucket string, cmd *cliCommand) error {
+func processFile(path, key, bucket string, perms string, cmd *cliCommand) error {
 	// step: retrieve the file content
 	content, err := cmd.getFile(bucket, key)
 	if err != nil {
@@ -216,6 +218,11 @@ func processFile(path, key, bucket string, cmd *cliCommand) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
+
+	mode, err := strconv.ParseUint(perms, 0, 32)
+	if err != nil {
+		return err
+	}
 	// step: create the file for writing
-	return ioutil.WriteFile(path, content, 0644)
+	return ioutil.WriteFile(path, content, os.FileMode(mode))
 }
